@@ -2,6 +2,8 @@ using UnityEngine;
 
 [RequireComponent(typeof(CombatStats))]
 [RequireComponent(typeof(PlayerMotor))]
+[RequireComponent(typeof(PlayerInput))]
+[RequireComponent(typeof(PlayerAnimation))]
 public class PlayerCombat : MonoBehaviour
 {
     [Header("References")]
@@ -14,6 +16,8 @@ public class PlayerCombat : MonoBehaviour
 
     private CombatStats combatStats;
     private PlayerMotor playerMotor;
+    private PlayerInput playerInput;
+    private PlayerAnimation playerAnimation;
     private Targetable currentTarget;
     private float lastAttackTime;
 
@@ -21,6 +25,8 @@ public class PlayerCombat : MonoBehaviour
     {
         combatStats = GetComponent<CombatStats>();
         playerMotor = GetComponent<PlayerMotor>();
+        playerInput = GetComponent<PlayerInput>();
+        playerAnimation = GetComponent<PlayerAnimation>();
 
         if (mainCamera == null)
         {
@@ -30,8 +36,21 @@ public class PlayerCombat : MonoBehaviour
 
     private void Update()
     {
+        HandleManualCancel();
         HandleTargetSelection();
         HandleAutoAttack();
+    }
+
+    private void HandleManualCancel()
+    {
+        if (playerInput.MoveAxis.sqrMagnitude > 0.01f)
+        {
+            if (currentTarget != null)
+            {
+                Debug.Log("Combate cancelado (movimento manual).");
+                currentTarget = null;
+            }
+        }
     }
 
     private void HandleTargetSelection()
@@ -54,15 +73,21 @@ public class PlayerCombat : MonoBehaviour
             target = hit.collider.GetComponentInParent<Targetable>();
         }
 
-        if (target == null)
+        if (target != null)
+        {
+            if (!target.CanBeTargeted())
+                return;
+
+            currentTarget = target;
+            Debug.Log($"Alvo selecionado: {currentTarget.gameObject.name}");
             return;
+        }
 
-        if (!target.CanBeTargeted())
-            return;
-
-        currentTarget = target;
-
-        Debug.Log($"Alvo selecionado: {currentTarget.gameObject.name}");
+        if (currentTarget != null)
+        {
+            Debug.Log("Alvo cancelado.");
+            currentTarget = null;
+        }
     }
 
     private void HandleAutoAttack()
@@ -100,7 +125,11 @@ public class PlayerCombat : MonoBehaviour
         if (lookDirection.sqrMagnitude > 0.001f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(lookDirection);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 12f * Time.deltaTime);
+            transform.rotation = Quaternion.Slerp(
+                transform.rotation,
+                targetRotation,
+                12f * Time.deltaTime
+            );
         }
 
         if (Time.time < lastAttackTime + attackCooldown)
@@ -116,6 +145,8 @@ public class PlayerCombat : MonoBehaviour
         }
 
         lastAttackTime = Time.time;
+
+        playerAnimation?.PlayAttack();
 
         Debug.Log($"{gameObject.name} atacou {currentTarget.gameObject.name} causando {combatStats.AttackDamage} de dano.");
         targetStats.TakeDamage(combatStats.AttackDamage);

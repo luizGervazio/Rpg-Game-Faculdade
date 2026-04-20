@@ -11,7 +11,6 @@ public class PlayerMotor : MonoBehaviour
 
     private CharacterController controller;
     private PlayerInput playerInput;
-
     private float verticalVelocity;
 
     public bool IsMoving { get; private set; }
