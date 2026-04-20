@@ -11,17 +11,18 @@ public class PlayerMotor : MonoBehaviour
 
     private CharacterController controller;
     private PlayerInput playerInput;
-    private Vector3 velocity;
+
+    private float verticalVelocity;
 
     public bool IsMoving { get; private set; }
 
-    void Awake()
+    private void Awake()
     {
         controller = GetComponent<CharacterController>();
         playerInput = GetComponent<PlayerInput>();
     }
 
-    void Update()
+    private void Update()
     {
         Vector3 moveDirection = Vector3.zero;
         bool isMovingNow = false;
@@ -57,6 +58,10 @@ public class PlayerMotor : MonoBehaviour
             }
         }
 
+        HandleGravity();
+
+        Vector3 finalMove = Vector3.zero;
+
         if (isMovingNow)
         {
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
@@ -66,22 +71,38 @@ public class PlayerMotor : MonoBehaviour
                 rotationSpeed * Time.deltaTime
             );
 
-            controller.Move(transform.forward * speed * Time.deltaTime);
+            finalMove = transform.forward * speed;
         }
 
-        ApplyGravity();
+        finalMove.y = verticalVelocity;
+
+        controller.Move(finalMove * Time.deltaTime);
 
         IsMoving = isMovingNow;
     }
 
-    private void ApplyGravity()
+    private void HandleGravity()
     {
-        if (controller.isGrounded && velocity.y < 0f)
+        if (controller.isGrounded)
         {
-            velocity.y = -2f;
+            if (verticalVelocity < 0f)
+            {
+                verticalVelocity = -1f;
+            }
         }
+        else
+        {
+            verticalVelocity += gravity * Time.deltaTime;
+        }
+    }
 
-        velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
+    public void MoveTo(Vector3 targetPosition)
+    {
+        playerInput.SetClickTarget(targetPosition);
+    }
+
+    public void StopMovement()
+    {
+        playerInput.ClearClickTarget();
     }
 }

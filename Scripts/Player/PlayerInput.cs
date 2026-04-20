@@ -8,14 +8,13 @@ public class PlayerInput : MonoBehaviour
     public bool HasClickTarget { get; private set; }
     public Vector3 ClickTarget { get; private set; }
 
-    void Update()
+    private void Update()
     {
         float x = Input.GetAxisRaw("Horizontal");
         float z = Input.GetAxisRaw("Vertical");
 
         MoveAxis = new Vector2(x, z).normalized;
 
-        // Clique único OU clique segurado
         if (Input.GetMouseButtonDown(0) || Input.GetMouseButton(0))
         {
             Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
@@ -26,6 +25,12 @@ public class PlayerInput : MonoBehaviour
                 HasClickTarget = true;
             }
         }
+    }
+
+    public void SetClickTarget(Vector3 targetPosition)
+    {
+        ClickTarget = targetPosition;
+        HasClickTarget = true;
     }
 
     public void ClearClickTarget()
