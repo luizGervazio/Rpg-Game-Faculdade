@@ -22,7 +22,10 @@ public class PlayerAnimation : MonoBehaviour
 
     private void Update()
     {
-        animator.SetBool(IsMovingHash, playerMotor != null && playerMotor.IsMoving);
+        if (animator == null || playerMotor == null)
+            return;
+
+        animator.SetBool(IsMovingHash, playerMotor.IsMoving);
     }
 
     public void PlayAttack()
@@ -43,5 +46,17 @@ public class PlayerAnimation : MonoBehaviour
     public void PlayDeath()
     {
         animator.SetTrigger(DeathHash);
+    }
+
+    public void ResetToIdle()
+    {
+        animator.ResetTrigger(AttackLeftHash);
+        animator.ResetTrigger(AttackRightHash);
+        animator.ResetTrigger(TakeDamageHash);
+        animator.ResetTrigger(DeathHash);
+
+        animator.SetBool(IsMovingHash, false);
+        animator.Play("Idle", 0, 0f);
+        animator.Update(0f);
     }
 }

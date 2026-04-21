@@ -127,6 +127,8 @@ public class PlayerRespawn : MonoBehaviour
             playerCombat.ClearTarget();
         }
 
+        playerAnimation?.ResetToIdle();
+
         isDead = false;
 
         Debug.Log("Player ressurgiu.");
