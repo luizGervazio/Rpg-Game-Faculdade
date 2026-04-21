@@ -17,6 +17,7 @@ public class CombatStats : MonoBehaviour
 
     public event Action<int> OnDamageTaken;
     public event Action OnDeath;
+    public event Action OnRespawned;
 
     private void Awake()
     {
@@ -46,5 +47,12 @@ public class CombatStats : MonoBehaviour
     {
         Debug.Log($"{gameObject.name} morreu.");
         OnDeath?.Invoke();
+    }
+
+    public void RestoreFullHealth()
+    {
+        currentHealth = maxHealth;
+        Debug.Log($"{gameObject.name} teve a vida restaurada. HP: {currentHealth}/{maxHealth}");
+        OnRespawned?.Invoke();
     }
 }
