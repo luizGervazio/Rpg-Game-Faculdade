@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class CombatStats : MonoBehaviour
@@ -13,6 +14,9 @@ public class CombatStats : MonoBehaviour
     public int CurrentHealth => currentHealth;
     public int AttackDamage => attackDamage;
     public bool IsDead => currentHealth <= 0;
+
+    public event Action<int> OnDamageTaken;
+    public event Action OnDeath;
 
     private void Awake()
     {
@@ -30,6 +34,8 @@ public class CombatStats : MonoBehaviour
 
         Debug.Log($"{gameObject.name} recebeu {damage} de dano. HP: {currentHealth}/{maxHealth}");
 
+        OnDamageTaken?.Invoke(damage);
+
         if (currentHealth <= 0)
         {
             Die();
@@ -39,6 +45,6 @@ public class CombatStats : MonoBehaviour
     private void Die()
     {
         Debug.Log($"{gameObject.name} morreu.");
-        gameObject.SetActive(false);
+        OnDeath?.Invoke();
     }
 }
