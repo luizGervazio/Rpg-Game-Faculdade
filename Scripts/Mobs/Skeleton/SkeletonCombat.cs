@@ -10,7 +10,6 @@ public class SkeletonCombat : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 1.5f;
     [SerializeField] private float rotationSpeed = 8f;
-    [SerializeField] private float stopDistance = 1.5f;
 
     [Header("Combat")]
     [SerializeField] private float attackRange = 2f;
@@ -18,6 +17,8 @@ public class SkeletonCombat : MonoBehaviour
 
     private CombatStats combatStats;
     private CharacterController controller;
+    private SkeletonAnimation skeletonAnimation;
+
     private float lastAttackTime;
     private float verticalVelocity;
     private const float Gravity = -9.81f;
@@ -28,6 +29,7 @@ public class SkeletonCombat : MonoBehaviour
     {
         combatStats = GetComponent<CombatStats>();
         controller = GetComponent<CharacterController>();
+        skeletonAnimation = GetComponent<SkeletonAnimation>();
     }
 
     private void Update()
@@ -36,6 +38,7 @@ public class SkeletonCombat : MonoBehaviour
 
         if (target == null || combatStats.IsDead)
         {
+            skeletonAnimation?.SetMoving(false);
             ApplyVerticalOnly();
             return;
         }
@@ -51,6 +54,7 @@ public class SkeletonCombat : MonoBehaviour
         }
         else
         {
+            skeletonAnimation?.SetMoving(false);
             FaceTarget(flatTargetPosition);
             TryAttack();
             ApplyVerticalOnly();
@@ -68,6 +72,7 @@ public class SkeletonCombat : MonoBehaviour
     public void ClearTarget()
     {
         target = null;
+        skeletonAnimation?.SetMoving(false);
     }
 
     private void MoveToTarget(Vector3 flatTargetPosition)
@@ -77,6 +82,7 @@ public class SkeletonCombat : MonoBehaviour
 
         if (direction.sqrMagnitude <= 0.001f)
         {
+            skeletonAnimation?.SetMoving(false);
             ApplyVerticalOnly();
             return;
         }
@@ -93,6 +99,7 @@ public class SkeletonCombat : MonoBehaviour
         Vector3 move = direction * moveSpeed;
         move.y = verticalVelocity;
 
+        skeletonAnimation?.SetMoving(true);
         controller.Move(move * Time.deltaTime);
     }
 
@@ -129,6 +136,8 @@ public class SkeletonCombat : MonoBehaviour
         }
 
         lastAttackTime = Time.time;
+
+        skeletonAnimation?.PlayAttack();
 
         Debug.Log($"{gameObject.name} atacou {target.name} causando {combatStats.AttackDamage} de dano.");
         targetStats.TakeDamage(combatStats.AttackDamage);
